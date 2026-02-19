@@ -76,7 +76,7 @@ export default function AuthPage() {
                         style={{ background: 'linear-gradient(135deg, #c9a227, #8b6914)' }}>
                         <img src="/Icon.webp" alt="Logo" className="w-full h-full object-cover" />
                     </div>
-                    <h1 className="text-3xl font-bold text-gold mb-1">أولي النهي</h1>
+                    <h1 className="text-3xl font-bold text-gold mb-1">أولي النهى</h1>
                     <p style={{ color: 'var(--color-text-muted)' }} className="text-sm">
                         تتبع رحلتك في ختم القرآن الكريم
                     </p>

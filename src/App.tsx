@@ -38,7 +38,7 @@ function AppContent() {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
         <div className="text-center">
           <Loader2 size={48} className="animate-spin mx-auto mb-4" style={{ color: 'var(--color-gold)' }} />
-          <p style={{ color: 'var(--color-text-muted)' }}>أولى النهى</p>
+          <p style={{ color: 'var(--color-text-muted)' }}>أولي النهى</p>
         </div>
       </div>
     )

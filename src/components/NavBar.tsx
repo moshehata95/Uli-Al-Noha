@@ -25,7 +25,7 @@ export default function NavBar() {
                     style={{ background: 'linear-gradient(135deg, #c9a227, #8b6914)' }}>
                     <img src="/Icon.webp" alt="Logo" className="w-full h-full object-cover" />
                 </div>
-                <span className="font-bold text-gold text-lg hidden sm:block">أولي النهي</span>
+                <span className="font-bold text-gold text-lg hidden sm:block">أولي النهى</span>
             </NavLink>
 
             {/* Nav items */}

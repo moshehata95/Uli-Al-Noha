@@ -112,6 +112,16 @@ export interface Database {
                     rank: number
                 }[]
             }
+            get_group_by_invite_code: {
+                Args: { code: string }
+                Returns: {
+                    id: string
+                    name: string
+                    invite_code: string
+                    owner_id: string
+                    created_at: string
+                }[]
+            }
         }
     }
 }

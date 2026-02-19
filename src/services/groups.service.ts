@@ -31,13 +31,11 @@ export const groupService = {
     },
 
     async getGroupByInviteCode(code: string): Promise<Group | null> {
-        const { data, error } = await supabase
-            .from('groups')
-            .select('*')
-            .eq('invite_code', code)
-            .maybeSingle()
+        const { data, error } = await supabase.rpc('get_group_by_invite_code', { code })
         if (error) throw error
-        return data ? mapGroup(data as Record<string, unknown>) : null
+        // RPC returns an array, take the first item if exists
+        const groupData = data?.[0]
+        return groupData ? mapGroup(groupData as unknown as Record<string, unknown>) : null
     },
 
     async joinGroup(groupId: string, userId: string): Promise<void> {
@@ -85,6 +83,14 @@ export const groupService = {
             .maybeSingle()
         if (error) throw error
         return data ? mapGroup(data as Record<string, unknown>) : null
+    },
+
+    async deleteGroup(groupId: string): Promise<void> {
+        const { error } = await supabase
+            .from('groups')
+            .delete()
+            .eq('id', groupId)
+        if (error) throw error
     },
 }
 

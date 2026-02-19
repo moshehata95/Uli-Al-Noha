@@ -58,6 +58,17 @@ export const quranService = {
             return null
         }
     },
+
+    async fetchAyahText(surahNumber: number, ayahNumber: number): Promise<string | null> {
+        try {
+            const res = await fetch(`https://api.alquran.cloud/v1/ayah/${surahNumber}:${ayahNumber}`)
+            const json = await res.json()
+            if (json.code !== 200) return null
+            return json.data.text
+        } catch {
+            return null
+        }
+    },
 }
 
 function mapSurah(row: Record<string, unknown>): Surah {

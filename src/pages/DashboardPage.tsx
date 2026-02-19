@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Loader2, ChevronRight, Bookmark, BookOpen } from 'lucide-react'
 import { useUser } from '../hooks/useUser'
 import { useAyahMap, useSurah } from '../hooks/useSurahs'
+import { quranService } from '../services/quran.service'
 import { useNavigate } from 'react-router-dom'
 
 export default function DashboardPage() {
@@ -10,6 +11,13 @@ export default function DashboardPage() {
     const { data: ayahMap } = useAyahMap(user?.progressSurah ?? null, user?.progressAyah ?? null)
     const navigate = useNavigate()
     const [feedback, setFeedback] = useState<string | null>(null)
+    const [ayahText, setAyahText] = useState<string | null>(null)
+
+    // Fetch Ayah text when progress changes
+    useEffect(() => {
+        if (!user) return
+        quranService.fetchAyahText(user.progressSurah, user.progressAyah).then(setAyahText)
+    }, [user?.progressSurah, user?.progressAyah])
 
     const showFeedback = (msg: string) => {
         setFeedback(msg)
@@ -79,9 +87,25 @@ export default function DashboardPage() {
                     <h3 className="text-4xl font-bold mb-1 text-gold" dir="rtl">
                         {surahData?.nameAr ?? '...'}
                     </h3>
-                    <p className="text-lg" style={{ color: 'var(--color-text-muted)' }}>
+                    <p className="text-lg mb-6" style={{ color: 'var(--color-text-muted)' }}>
                         {surahData?.nameEn}
                     </p>
+
+                    {/* Ayah Text Display */}
+                    {ayahText ? (
+                        <div className="mb-8 relative py-4 px-2">
+                            <span className="text-4xl text-center block leading-loose" dir="rtl" style={{ fontFamily: 'Noto Naskh Arabic', color: '#fff', textShadow: '0 0 20px rgba(201,162,39,0.3)' }}>
+                                {ayahText}
+                            </span>
+                            <div className="text-xs mt-4 text-center" style={{ color: 'var(--color-gold)' }}>
+                                ﴿ الآية {user.progressAyah} ﴾
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="h-24 flex items-center justify-center mb-8">
+                            <Loader2 size={24} className="animate-spin" style={{ color: 'var(--color-text-muted)' }} />
+                        </div>
+                    )}
                 </div>
 
                 {/* Ayah progress */}

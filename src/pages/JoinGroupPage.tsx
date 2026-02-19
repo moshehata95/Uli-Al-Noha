@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Loader2, UserPlus, CheckCircle } from 'lucide-react'
 import { groupService } from '../services/groups.service'
@@ -15,8 +15,9 @@ export default function JoinGroupPage() {
     const [status, setStatus] = useState<'loading' | 'found' | 'notfound' | 'joined' | 'already' | 'error'>('loading')
     const [isJoining, setIsJoining] = useState(false)
 
-    useEffect(() => {
+    const checkInvite = useCallback(() => {
         if (!inviteCode) return
+        setStatus('loading')
         groupService.getGroupByInviteCode(inviteCode).then((g) => {
             if (!g) { setStatus('notfound'); return }
             setGroup(g)
@@ -30,6 +31,10 @@ export default function JoinGroupPage() {
             }
         }).catch(() => setStatus('error'))
     }, [inviteCode, session?.user?.id])
+
+    useEffect(() => {
+        checkInvite()
+    }, [checkInvite])
 
     const handleJoin = async () => {
         if (!group || !session?.user?.id) return
@@ -58,7 +63,10 @@ export default function JoinGroupPage() {
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-xl font-bold mb-2">رابط الدعوة غير صالح</h3>
                 <p style={{ color: 'var(--color-text-muted)' }} className="mb-6">تحقق من الرابط أو اطلب دعوة جديدة من صديقك</p>
-                <button onClick={() => navigate('/groups')} className="btn-secondary">العودة للمجموعات</button>
+                <div className="flex gap-3 justify-center">
+                    <button onClick={checkInvite} className="btn-primary">حاول مجدداً</button>
+                    <button onClick={() => navigate('/groups')} className="btn-secondary">العودة</button>
+                </div>
             </div>
         )
 
@@ -66,7 +74,11 @@ export default function JoinGroupPage() {
             <div className="text-center py-8">
                 <div className="text-6xl mb-4">⚠️</div>
                 <h3 className="text-xl font-bold mb-2">حدث خطأ</h3>
-                <button onClick={() => navigate('/groups')} className="btn-secondary">العودة</button>
+                <p style={{ color: 'var(--color-text-muted)' }} className="mb-6">تأكد من اتصالك بالإنترنت</p>
+                <div className="flex gap-3 justify-center">
+                    <button onClick={checkInvite} className="btn-primary">حاول مجدداً</button>
+                    <button onClick={() => navigate('/groups')} className="btn-secondary">العودة</button>
+                </div>
             </div>
         )
 

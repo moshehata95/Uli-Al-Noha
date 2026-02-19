@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Loader2, Users, Copy, Check, Trophy } from 'lucide-react'
-import { ArrowRight } from 'lucide-react'
+import { Loader2, Users, Copy, Check, Trophy, Trash2, ArrowRight } from 'lucide-react'
+import { groupService } from '../services/groups.service'
 import { useLeaderboard, useGroupById } from '../hooks/useGroups'
 import { useGroupRealtime } from '../hooks/useGroupRealtime'
 import { useAuth } from '../hooks/useAuth'
@@ -167,6 +167,7 @@ export default function GroupDetailPage() {
     const { data: members, isLoading } = useLeaderboard(groupId ?? null)
     const { session } = useAuth()
     const [copied, setCopied] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
 
     useGroupRealtime(groupId ?? null)
 
@@ -180,6 +181,18 @@ export default function GroupDetailPage() {
         setTimeout(() => setCopied(false), 2000)
     }
 
+    const handleDelete = async () => {
+        if (!group || !window.confirm('هل أنت متأكد من حذف المجموعة؟ لا يمكن التراجع عن هذا الإجراء.')) return
+        setIsDeleting(true)
+        try {
+            await groupService.deleteGroup(group.id)
+            navigate('/groups')
+        } catch {
+            alert('فشل حذف المجموعة')
+            setIsDeleting(false)
+        }
+    }
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
@@ -191,7 +204,7 @@ export default function GroupDetailPage() {
     return (
         <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
             <div className="flex items-center gap-4 pt-4">
-                <button onClick={() => navigate('/groups')} className="btn-ghost p-2 rounded-xl">
+                <button onClick={() => navigate('/groups')} className="btn-ghost p-2 rounded-xl" title="عودة للمجموعات">
                     <ArrowRight size={20} />
                 </button>
                 <div className="flex-1">
@@ -232,6 +245,19 @@ export default function GroupDetailPage() {
                     style={{ background: 'rgba(201,162,39,0.05)', border: '1px solid rgba(201,162,39,0.15)', color: 'var(--color-text-muted)' }}>
                     <span style={{ color: 'var(--color-gold)' }}>🔗</span>{' '}
                     رابط الانضمام: <code className="text-xs">{window.location.origin}/join/{group.inviteCode}</code>
+                </div>
+            )}
+
+            {group && session?.user?.id === group.ownerId && (
+                <div className="flex justify-end pt-4 border-t border-[rgba(255,255,255,0.1)]">
+                    <button
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="btn-ghost text-red-400 hover:text-red-300 hover:bg-red-900/20 flex items-center gap-2 px-4"
+                    >
+                        {isDeleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                        حذف المجموعة
+                    </button>
                 </div>
             )}
         </div>

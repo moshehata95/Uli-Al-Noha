@@ -44,7 +44,7 @@ export const quranService = {
         name: string
     } | null> {
         try {
-            const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}`)
+            const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}/quran-uthmani`)
             const json = await res.json()
             if (json.code !== 200) return null
             return {
@@ -61,7 +61,7 @@ export const quranService = {
 
     async fetchAyahText(surahNumber: number, ayahNumber: number): Promise<string | null> {
         try {
-            const res = await fetch(`https://api.alquran.cloud/v1/ayah/${surahNumber}:${ayahNumber}`)
+            const res = await fetch(`https://api.alquran.cloud/v1/ayah/${surahNumber}:${ayahNumber}/quran-uthmani`)
             const json = await res.json()
             if (json.code !== 200) return null
             return json.data.text

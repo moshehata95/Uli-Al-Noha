@@ -1,20 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from './useAuth'
-import { userService } from '../services/users.service'
 import { useAuthStore } from '../stores/authStore'
+import { userService } from '../services/users.service'
 import type { UserProfile } from '../types/database'
 
 export function useUser() {
-    const { session } = useAuth()
+    // Read directly from store to avoid re-subscribing to the auth hook
+    const userId = useAuthStore((s) => s.session?.user?.id)
     const setUser = useAuthStore((s) => s.setUser)
     const queryClient = useQueryClient()
-    const userId = session?.user?.id
 
     const userQuery = useQuery<UserProfile>({
         queryKey: ['user', userId],
         queryFn: () => userService.getProfile(userId!),
         enabled: !!userId,
-        staleTime: 30_000,
+        staleTime: 5 * 60 * 1000,   // 5 minutes — profile only changes on mutation
+        gcTime: 10 * 60 * 1000,     // keep in cache 10 minutes
+        retry: 1,                   // only 1 retry for faster error recovery
     })
 
     const advanceAyah = useMutation({

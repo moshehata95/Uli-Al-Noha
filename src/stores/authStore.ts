@@ -18,6 +18,9 @@ export const useAuthStore = create<AuthState>()(
         (set) => ({
             session: null,
             user: null,
+            // Start as 'loading' — the persist middleware will rehydrate
+            // immediately from localStorage, so if a session exists the
+            // loading transitions to false very quickly in useAuth.
             isLoading: true,
             setSession: (session) => set({ session }),
             setUser: (user) => set({ user }),
@@ -26,6 +29,7 @@ export const useAuthStore = create<AuthState>()(
         }),
         {
             name: 'uli-al-noha-auth',
+            // Only persist the session token — not loading state (always starts fresh)
             partialize: (state) => ({ session: state.session }),
         }
     )

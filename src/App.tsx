@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuth } from './hooks/useAuth'
+import { useAuthStore } from './stores/authStore'
 import NavBar from './components/NavBar'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
@@ -13,16 +14,24 @@ import { Loader2 } from 'lucide-react'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 2,
+      retry: 1,               // 1 retry (was 2) — much faster failure recovery
       refetchOnWindowFocus: false,
+      staleTime: 60_000,     // 1 min default stale time — reduces redundant fetches
+      gcTime: 10 * 60_000,  // 10 min cache time
     },
   },
 })
 
 function AppContent() {
-  const { session, isLoading } = useAuth()
+  // useAuth runs the subscription/session check in the background
+  useAuth()
+  // Read state directly from store — avoids double render from hook internals
+  const session = useAuthStore((s) => s.session)
+  const isLoading = useAuthStore((s) => s.isLoading)
 
-  if (isLoading) {
+  // Only show full-screen spinner on first visit (no persisted session).
+  // Return visitors: session is already in localStorage so we skip the wait.
+  if (isLoading && !session) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
         <div className="text-center">

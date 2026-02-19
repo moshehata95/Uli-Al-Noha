@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
 import { userService } from '../services/users.service'
 
@@ -7,8 +7,18 @@ export function useAuth() {
     const { session, user, isLoading, setSession, setUser, setLoading, clear } = useAuthStore()
 
     useEffect(() => {
+        // If env vars are missing, bail immediately so app isn't stuck loading
+        if (!isSupabaseConfigured) {
+            setLoading(false)
+            return
+        }
+
+        // Safety net: never stay in loading state more than 5 seconds
+        const timeout = setTimeout(() => setLoading(false), 5000)
+
         // Get initial session
         supabase.auth.getSession().then(async ({ data: { session } }) => {
+            clearTimeout(timeout)
             setSession(session)
             if (session?.user) {
                 try {
@@ -18,6 +28,9 @@ export function useAuth() {
                     // Profile may not exist yet
                 }
             }
+            setLoading(false)
+        }).catch(() => {
+            clearTimeout(timeout)
             setLoading(false)
         })
 
@@ -37,7 +50,10 @@ export function useAuth() {
             setLoading(false)
         })
 
-        return () => subscription.unsubscribe()
+        return () => {
+            clearTimeout(timeout)
+            subscription.unsubscribe()
+        }
     }, [])
 
     const signIn = async (email: string, password: string) => {

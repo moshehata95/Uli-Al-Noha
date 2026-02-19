@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { BookOpen, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { isSupabaseConfigured } from '../lib/supabase'
+import { BookOpen, Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react'
 
 // Google logo SVG (official colors, no external dependency)
 function GoogleIcon() {
@@ -83,6 +84,17 @@ export default function AuthPage() {
 
                 {/* Card */}
                 <div className="glass p-8">
+
+                    {/* Config warning banner — shown when env vars are missing */}
+                    {!isSupabaseConfigured && (
+                        <div className="flex items-start gap-3 rounded-xl p-4 mb-6 text-sm"
+                            style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171' }}>
+                            <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+                            <p>
+                                يرجى إضافة متغيرات البيئة <strong>VITE_SUPABASE_URL</strong> و <strong>VITE_SUPABASE_ANON_KEY</strong> في إعدادات Netlify ثم إعادة النشر.
+                            </p>
+                        </div>
+                    )}
 
                     {/* Google Sign-In Button */}
                     <button

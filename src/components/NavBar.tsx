@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { BookOpen, LayoutDashboard, Users, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, LogOut } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 
 export default function NavBar() {

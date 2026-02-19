@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { isSupabaseConfigured } from '../lib/supabase'
-import { BookOpen, Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react'
+import { Eye, EyeOff, Loader2, AlertTriangle } from 'lucide-react'
 
 // Google logo SVG (official colors, no external dependency)
 function GoogleIcon() {

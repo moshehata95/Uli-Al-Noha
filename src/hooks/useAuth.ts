@@ -1,10 +1,9 @@
 import { useEffect } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
-import { userService } from '../services/users.service'
 
 export function useAuth() {
-    const { session, user, isLoading, setSession, setUser, setLoading, clear } = useAuthStore()
+    const { session, user, isLoading, setSession, setLoading, clear } = useAuthStore()
 
     useEffect(() => {
         // If env vars are missing, bail immediately so app isn't stuck loading
@@ -16,38 +15,26 @@ export function useAuth() {
         // Safety net: never stay in loading state more than 5 seconds
         const timeout = setTimeout(() => setLoading(false), 5000)
 
-        // Get initial session
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
+        // Get initial session — only update auth session, NOT user profile.
+        // The profile is fetched by useUser via React Query (single source of truth).
+        supabase.auth.getSession().then(({ data: { session } }) => {
             clearTimeout(timeout)
             setSession(session)
-            if (session?.user) {
-                try {
-                    const profile = await userService.getProfile(session.user.id)
-                    setUser(profile)
-                } catch {
-                    // Profile may not exist yet
-                }
-            }
             setLoading(false)
         }).catch(() => {
             clearTimeout(timeout)
             setLoading(false)
         })
 
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        // Listen for auth changes (sign-in, sign-out, token refresh)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session)
-            if (session?.user) {
-                try {
-                    const profile = await userService.getProfile(session.user.id)
-                    setUser(profile)
-                } catch {
-                    setUser(null)
-                }
-            } else {
-                setUser(null)
+            if (!session) {
+                // Signed out — clear loading
+                setLoading(false)
             }
-            setLoading(false)
+            // Don't set isLoading=false here for sign-in events;
+            // getSession().then() above already does that on initial load.
         })
 
         return () => {

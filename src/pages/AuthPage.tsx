@@ -76,7 +76,7 @@ export default function AuthPage() {
                         style={{ background: 'linear-gradient(135deg, #c9a227, #8b6914)' }}>
                         <BookOpen size={40} color="#0a0e14" />
                     </div>
-                    <h1 className="text-3xl font-bold text-gold mb-1">أولى النهى</h1>
+                    <h1 className="text-3xl font-bold text-gold mb-1">أولي النهي</h1>
                     <p style={{ color: 'var(--color-text-muted)' }} className="text-sm">
                         تتبع رحلتك في ختم القرآن الكريم
                     </p>

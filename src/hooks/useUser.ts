@@ -69,11 +69,34 @@ export function useUser() {
         },
     })
 
+    const resetProgress = useMutation({
+        mutationFn: () => userService.setProgress(userId!, 1, 1),
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: ['user', userId] })
+            const prev = queryClient.getQueryData<UserProfile>(['user', userId])
+            if (prev) {
+                queryClient.setQueryData<UserProfile>(['user', userId], {
+                    ...prev,
+                    progressSurah: 1,
+                    progressAyah: 1,
+                })
+            }
+            return { prev }
+        },
+        onError: (_err: unknown, _v: unknown, ctx: { prev?: UserProfile } | undefined) => {
+            if (ctx?.prev) queryClient.setQueryData<UserProfile>(['user', userId], ctx.prev)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user', userId] })
+        },
+    })
+
     return {
         user: userQuery.data,
         isLoading: userQuery.isLoading,
         error: userQuery.error,
         advanceAyah,
         completeSurah,
+        resetProgress,
     }
 }

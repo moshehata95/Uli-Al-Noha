@@ -9,7 +9,7 @@ import { useQueryClient } from '@tanstack/react-query'
 
 
 export default function DashboardPage() {
-    const { user, isLoading, advanceAyah, completeSurah } = useUser()
+    const { user, isLoading, advanceAyah, completeSurah, resetProgress } = useUser()
     const { data: surahData } = useSurah(user?.progressSurah)
     const { data: ayahMap } = useAyahMap(user?.progressSurah ?? null, user?.progressAyah ?? null)
     const navigate = useNavigate()
@@ -201,7 +201,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Action buttons - Moved here for better accessibility */}
-                <div className="grid grid-cols-2 gap-3 mb-8">
+                <div className="grid grid-cols-2 gap-3 mb-4">
                     <button
                         onClick={handleAdvance}
                         disabled={advanceAyah.isPending}
@@ -217,6 +217,61 @@ export default function DashboardPage() {
                     >
                         {completeSurah.isPending ? <Loader2 size={16} className="animate-spin" /> : <BookOpen size={18} />}
                         {isLastPageOfSurah ? 'أتممت السورة' : 'أتممت الصفحة'}
+                    </button>
+                </div>
+
+                {/* Go Back Controls */}
+                <div className="grid grid-cols-3 gap-2 mb-8">
+                    <button
+                        onClick={async () => {
+                            if (!user) return
+                            if (user.progressAyah > 1) {
+                                await userService.setProgress(user.id, user.progressSurah, user.progressAyah - 1)
+                                queryClient.invalidateQueries({ queryKey: ['user'] })
+                                showFeedback(`تراجعت للآية ${user.progressAyah - 1}`)
+                            } else if (user.progressSurah > 1) {
+                                // Go to previous surah's last ayah? Or first ayah? Using FIRST of previous as safetynet for now as getting last requires fetch
+                                // Actually better to just go to start of previous surah
+                                await userService.setProgress(user.id, user.progressSurah - 1, 1)
+                                queryClient.invalidateQueries({ queryKey: ['user'] })
+                                showFeedback(`تراجعت لسورة السابقة`)
+                            }
+                        }}
+                        className="btn-ghost text-xs border border-[rgba(30,58,95,0.4)] py-2"
+                    >
+                        تراجع آية
+                    </button>
+                    <button
+                        onClick={async () => {
+                            if (!user || currentPage <= 1) return
+                            try {
+                                // Go to start of previous page
+                                const prevPage = currentPage - 1
+                                const data = await quranService.getPageData(prevPage)
+                                if (data && data.ayahs.length > 0) {
+                                    const firstAyah = data.ayahs[0]
+                                    await userService.setProgress(user.id, firstAyah.surah.number, firstAyah.numberInSurah)
+                                    queryClient.invalidateQueries({ queryKey: ['user'] })
+                                    showFeedback(`تراجعت للصفحة ${prevPage}`)
+                                }
+                            } catch (e) {
+                                console.error(e)
+                            }
+                        }}
+                        className="btn-ghost text-xs border border-[rgba(30,58,95,0.4)] py-2"
+                    >
+                        تراجع صفحة
+                    </button>
+                    <button
+                        onClick={async () => {
+                            if (!user || user.progressSurah <= 1) return
+                            await userService.setProgress(user.id, user.progressSurah - 1, 1)
+                            queryClient.invalidateQueries({ queryKey: ['user'] })
+                            showFeedback(`تراجعت للسورة السابقة`)
+                        }}
+                        className="btn-ghost text-xs border border-[rgba(30,58,95,0.4)] py-2"
+                    >
+                        تراجع سورة
                     </button>
                 </div>
 
@@ -258,7 +313,7 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-bold mb-3 pr-2 border-r-2 border-[var(--color-gold)]" style={{ color: 'var(--color-text-muted)' }}>
                     المصحف الشريف
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 mb-6">
                     <button
                         onClick={() => navigate(`/page/${currentPage}`)}
                         className="btn-secondary flex items-center justify-center gap-2"
@@ -272,6 +327,21 @@ export default function DashboardPage() {
                     >
                         <BookOpen size={18} />
                         تصفح المصحف
+                    </button>
+                </div>
+
+                <div className="text-center">
+                    <button
+                        onClick={() => {
+                            if (window.confirm('هل أنت متأكد من رغبتك في إعادة ضبط تقدمك؟ سيعود العداد إلى بداية المصحف.')) {
+                                resetProgress.mutate(undefined)
+                                showFeedback('تم إعادة ضبط التقدم بنجاح')
+                            }
+                        }}
+                        className="text-xs text-red-400/70 hover:text-red-400 transition-colors py-2 px-4 rounded-lg hover:bg-red-500/10"
+                        disabled={resetProgress.isPending}
+                    >
+                        {resetProgress.isPending ? 'جاري التنفيذ...' : 'إعادة ضبط التقدم'}
                     </button>
                 </div>
             </div>

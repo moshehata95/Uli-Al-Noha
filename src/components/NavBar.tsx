@@ -25,7 +25,7 @@ export default function NavBar() {
                     style={{ background: 'linear-gradient(135deg, #c9a227, #8b6914)' }}>
                     <BookOpen size={18} color="#0a0e14" />
                 </div>
-                <span className="font-bold text-gold text-lg hidden sm:block">أولى النهى</span>
+                <span className="font-bold text-gold text-lg hidden sm:block">أولي النهي</span>
             </NavLink>
 
             {/* Nav items */}

@@ -11,26 +11,42 @@ export default function GlobalSearch() {
     const { data: surahs = [] } = useSurahs()
     const [loading, setLoading] = useState(false)
 
+    // Helper to normalize Arabic text for better search matching
+    const normalizeArabic = (text: string) => {
+        return text
+            .replace(/([^\u0621-\u063A\u0641-\u064A\u0660-\u0669a-zA-Z 0-9])/g, '') // Remove diacritics
+            .replace(/(آ|إ|أ)/g, 'ا')
+            .replace(/(ة)/g, 'ه')
+            .replace(/(ى)/g, 'ي')
+            .replace(/(ؤ)/g, 'و')
+            .replace(/(ئ)/g, 'ي')
+            .trim()
+            .toLowerCase()
+    }
+
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!query.trim()) return
 
         setLoading(true)
-        const lowerQuery = query.toLowerCase().trim()
+        const normalizedQuery = normalizeArabic(query)
 
         try {
-            // 1. Check if number (1-604) -> Page navigation
-            const pageNum = Number(lowerQuery)
-            if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= 604) {
-                navigate(`/page/${pageNum}`)
+
+
+            const numVal = Number(query.replace(/[٠-٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]))
+
+            if (!isNaN(numVal) && numVal >= 1 && numVal <= 604) {
+                navigate(`/page/${numVal}`)
                 setLoading(false)
                 return
             }
 
             // 2. Check if Juz/Part -> Juz navigation
-            const juzMatch = lowerQuery.match(/(?:juz|part|جزء)\s*(\d+)/i)
+            const juzMatch = query.match(/(?:juz|part|جزء)\s*(\d+|[٠-٩]+)/i)
             if (juzMatch) {
-                const juzNum = Number(juzMatch[1])
+                const partNumStr = juzMatch[1].replace(/[٠-٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)])
+                const juzNum = Number(partNumStr)
                 if (juzNum >= 1 && juzNum <= 30) {
                     const page = await quranService.getJuzStartPage(juzNum)
                     if (page) navigate(`/page/${page}`)
@@ -39,18 +55,34 @@ export default function GlobalSearch() {
                 return
             }
 
-            // 3. Search Surah Names
-            const surah = surahs.find(s =>
-                s.nameEn.toLowerCase() === lowerQuery ||
-                s.nameEn.toLowerCase().includes(lowerQuery) ||
-                s.nameAr.includes(query) ||
-                String(s.surahNumber) === lowerQuery
-            )
+            // 3. Search Surah Names with Normalization
+            const surah = surahs.find(s => {
+                const normNameAr = normalizeArabic(s.nameAr)
+                const normNameEn = normalizeArabic(s.nameEn) // Just lowercase/trim
+
+                return (
+                    normNameEn === normalizedQuery ||
+                    normNameEn.includes(normalizedQuery) ||
+                    normNameAr.includes(normalizedQuery) ||
+                    // Handle "Surat Yusuf" vs "Yusuf"
+                    normNameAr.replace('sura', '').trim().includes(normalizedQuery) ||
+                    String(s.surahNumber) === normalizedQuery
+                )
+            })
+
+            // If exact match not found, try fuzzy or "starts with"
+            // actually includes() covers startsWith. 
 
             if (surah) {
                 navigate(`/surah/${surah.surahNumber}`)
             } else {
-                alert(`لم يتم العثور على سورة "${query}"`)
+                // Try finding by simple string includes on original text as fallback
+                const fallback = surahs.find(s => s.nameAr.includes(query) || s.nameEn.toLowerCase().includes(query.toLowerCase()))
+                if (fallback) {
+                    navigate(`/surah/${fallback.surahNumber}`)
+                } else {
+                    alert(`لم يتم العثور على سورة "${query}"`)
+                }
             }
         } catch (err) {
             console.error(err)

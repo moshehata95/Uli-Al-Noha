@@ -141,6 +141,26 @@ export default function DashboardPage() {
                     <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
                 </div>
 
+                {/* Action buttons - Moved here for better accessibility */}
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                    <button
+                        onClick={handleAdvance}
+                        disabled={advanceAyah.isPending}
+                        className="btn-primary flex items-center justify-center gap-2"
+                    >
+                        {advanceAyah.isPending ? <Loader2 size={16} className="animate-spin" /> : <ChevronRight size={18} />}
+                        تقدم آية
+                    </button>
+                    <button
+                        onClick={handleComplete}
+                        disabled={completeSurah.isPending || user.progressSurah >= 114}
+                        className="btn-secondary flex items-center justify-center gap-2"
+                    >
+                        {completeSurah.isPending ? <Loader2 size={16} className="animate-spin" /> : <BookOpen size={18} />}
+                        أتممت السورة
+                    </button>
+                </div>
+
                 {/* Quran overall progress */}
                 <div className="flex items-center justify-between text-xs mb-2">
                     <span style={{ color: 'var(--color-text-muted)' }}>التقدم الكلي في القرآن</span>
@@ -165,25 +185,7 @@ export default function DashboardPage() {
                     ))}
                 </div>
 
-                {/* Action buttons */}
-                <div className="grid grid-cols-2 gap-3">
-                    <button
-                        onClick={handleAdvance}
-                        disabled={advanceAyah.isPending}
-                        className="btn-primary flex items-center justify-center gap-2"
-                    >
-                        {advanceAyah.isPending ? <Loader2 size={16} className="animate-spin" /> : <ChevronRight size={18} />}
-                        تقدم آية
-                    </button>
-                    <button
-                        onClick={handleComplete}
-                        disabled={completeSurah.isPending || user.progressSurah >= 114}
-                        className="btn-secondary flex items-center justify-center gap-2"
-                    >
-                        {completeSurah.isPending ? <Loader2 size={16} className="animate-spin" /> : <BookOpen size={18} />}
-                        أتممت السورة
-                    </button>
-                </div>
+
 
                 {user.progressSurah >= 114 && (
                     <div className="mt-4 text-center p-4 rounded-xl"

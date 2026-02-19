@@ -1,0 +1,64 @@
+import { useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuthStore } from '../stores/authStore'
+import { userService } from '../services/users.service'
+
+export function useAuth() {
+    const { session, user, isLoading, setSession, setUser, setLoading, clear } = useAuthStore()
+
+    useEffect(() => {
+        // Get initial session
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
+            setSession(session)
+            if (session?.user) {
+                try {
+                    const profile = await userService.getProfile(session.user.id)
+                    setUser(profile)
+                } catch {
+                    // Profile may not exist yet
+                }
+            }
+            setLoading(false)
+        })
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            setSession(session)
+            if (session?.user) {
+                try {
+                    const profile = await userService.getProfile(session.user.id)
+                    setUser(profile)
+                } catch {
+                    setUser(null)
+                }
+            } else {
+                setUser(null)
+            }
+            setLoading(false)
+        })
+
+        return () => subscription.unsubscribe()
+    }, [])
+
+    const signIn = async (email: string, password: string) => {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) throw error
+    }
+
+    const signUp = async (email: string, password: string, name: string) => {
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { name } },
+        })
+        if (error) throw error
+        return data
+    }
+
+    const signOut = async () => {
+        await supabase.auth.signOut()
+        clear()
+    }
+
+    return { session, user, isLoading, signIn, signUp, signOut }
+}

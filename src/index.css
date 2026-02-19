@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --color-bg: #0a0e14;
+  --color-surface: #111827;
+  --color-surface-2: #1a2535;
+  --color-border: #1e3a5f;
+  --color-gold: #c9a227;
+  --color-gold-light: #e8c84a;
+  --color-emerald: #10b981;
+  --color-text: #f0f4ff;
+  --color-text-muted: #8899aa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Cairo', 'Noto Naskh Arabic', system-ui, sans-serif;
+}
+
+/* Arabic text direction */
+[dir="rtl"] {
+  font-family: 'Noto Naskh Arabic', 'Cairo', system-ui, sans-serif;
+  line-height: 2;
+  font-size: 1.05em;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+
+/* Glass card */
+.glass {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(30, 58, 95, 0.5);
+  border-radius: 16px;
+}
+
+/* Gold gradient text */
+.text-gold {
+  background: linear-gradient(135deg, #c9a227, #f0d060, #c9a227);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow effects */
+.glow-gold {
+  box-shadow: 0 0 20px rgba(201, 162, 39, 0.3), 0 0 60px rgba(201, 162, 39, 0.1);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Background pattern */
+.bg-pattern {
+  background-image: 
+    radial-gradient(ellipse at 25% 25%, rgba(201, 162, 39, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 75%, rgba(16, 185, 129, 0.06) 0%, transparent 50%);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s ease-in-out infinite;
+}
+
+/* Button styles */
+.btn-primary {
+  background: linear-gradient(135deg, #c9a227, #b8891a);
+  color: #0a0e14;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Cairo', sans-serif;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e8c84a, #c9a227);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(201, 162, 39, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: rgba(30, 58, 95, 0.4);
+  color: var(--color-text);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(30, 58, 95, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Cairo', sans-serif;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(30, 58, 95, 0.7);
+  border-color: rgba(201, 162, 39, 0.4);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-family: 'Cairo', sans-serif;
+}
+
+.btn-ghost:hover {
+  color: var(--color-text);
+  background: rgba(255,255,255,0.05);
+}
+
+/* Input styles */
+.input {
+  width: 100%;
+  background: rgba(10, 14, 20, 0.8);
+  border: 1px solid rgba(30, 58, 95, 0.6);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  color: var(--color-text);
+  font-family: 'Cairo', sans-serif;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.input:focus {
+  border-color: rgba(201, 162, 39, 0.6);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.1);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 6px;
+  background: rgba(30, 58, 95, 0.4);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c9a227, #10b981);
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Rank badge */
+.rank-1 { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; }
+.rank-2 { background: linear-gradient(135deg, #c0c0c0, #808080); color: #000; }
+.rank-3 { background: linear-gradient(135deg, #cd7f32, #8b4513); color: #fff; }

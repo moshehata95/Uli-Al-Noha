@@ -178,23 +178,27 @@ export default function DashboardPage() {
                 )}
             </div>
 
-            {/* View Surah text */}
-            {/* View Surah text */}
-            <div className="grid grid-cols-2 gap-3">
-                <button
-                    onClick={() => navigate(`/page/${currentPage}`)}
-                    className="btn-secondary flex items-center justify-center gap-2"
-                >
-                    <BookOpen size={18} />
-                    تابع القراءة
-                </button>
-                <button
-                    onClick={() => navigate('/page/1?mode=read_only')}
-                    className="btn-ghost flex items-center justify-center gap-2 border border-[rgba(255,255,255,0.1)]"
-                >
-                    <BookOpen size={18} />
-                    تصفح المصحف
-                </button>
+            {/* Reading Section */}
+            <div className="pt-4 border-t border-[rgba(30,58,95,0.4)]">
+                <h3 className="text-sm font-bold mb-3 pr-2 border-r-2 border-[var(--color-gold)]" style={{ color: 'var(--color-text-muted)' }}>
+                    المصحف الشريف
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                    <button
+                        onClick={() => navigate(`/page/${currentPage}`)}
+                        className="btn-secondary flex items-center justify-center gap-2"
+                    >
+                        <BookOpen size={18} />
+                        تابع القراءة
+                    </button>
+                    <button
+                        onClick={() => navigate('/page/1?mode=read_only')}
+                        className="btn-ghost flex items-center justify-center gap-2 border border-[rgba(255,255,255,0.1)]"
+                    >
+                        <BookOpen size={18} />
+                        تصفح المصحف
+                    </button>
+                </div>
             </div>
         </div>
     )

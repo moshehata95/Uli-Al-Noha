@@ -1,18 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Loader2 } from 'lucide-react'
 import { quranService } from '../services/quran.service'
-import type { Surah } from '../types/database'
+
+import { useSurahs } from '../hooks/useSurahs'
 
 export default function GlobalSearch() {
     const navigate = useNavigate()
     const [query, setQuery] = useState('')
-    const [surahs, setSurahs] = useState<Surah[]>([])
+    const { data: surahs = [] } = useSurahs()
     const [loading, setLoading] = useState(false)
-
-    useEffect(() => {
-        quranService.getAllSurahs().then(setSurahs)
-    }, [])
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault()

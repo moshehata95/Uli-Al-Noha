@@ -12,14 +12,20 @@ export default function DashboardPage() {
     const { data: ayahMap } = useAyahMap(user?.progressSurah ?? null, user?.progressAyah ?? null)
     const navigate = useNavigate()
     const [feedback, setFeedback] = useState<string | null>(null)
-    const [ayahText, setAyahText] = useState<string | null>(null)
+    const [pageAyahs, setPageAyahs] = useState<any[]>([])
     const [currentPage, setCurrentPage] = useState<number>(1)
 
-    // Fetch Ayah text and Page number when progress changes
+    // Fetch Page Data instead of single Ayah
     useEffect(() => {
         if (!user) return
-        quranService.fetchAyahText(user.progressSurah, user.progressAyah).then(setAyahText)
-        quranService.getPageForAyah(user.progressSurah, user.progressAyah).then(p => p && setCurrentPage(p))
+        quranService.getPageForAyah(user.progressSurah, user.progressAyah).then(p => {
+            if (p) {
+                setCurrentPage(p)
+                quranService.getPageData(p).then(data => {
+                    if (data) setPageAyahs(data.ayahs)
+                })
+            }
+        })
     }, [user?.progressSurah, user?.progressAyah])
 
     const showFeedback = (msg: string) => {
@@ -96,14 +102,26 @@ export default function DashboardPage() {
                         {surahData?.nameEn}
                     </p>
 
-                    {/* Ayah Text Display */}
-                    {ayahText ? (
+                    {/* Page Text Display */}
+                    {pageAyahs.length > 0 ? (
                         <div className="mb-8 relative py-4 px-2">
-                            <span className="text-4xl text-center block leading-loose" dir="rtl" style={{ fontFamily: 'Noto Naskh Arabic', color: '#fff', textShadow: '0 0 20px rgba(201,162,39,0.3)' }}>
-                                {ayahText}
-                            </span>
-                            <div className="text-xs mt-4 text-center" style={{ color: 'var(--color-gold)' }}>
-                                ﴿ الآية {user.progressAyah} ﴾
+                            <div dir="rtl" className="leading-[2.5] text-xl md:text-2xl text-justify text-white" style={{ fontFamily: 'Noto Naskh Arabic' }}>
+                                {pageAyahs.map((ayah) => {
+                                    const isCurrent = ayah.numberInSurah === user.progressAyah && ayah.surah.number === user.progressSurah
+                                    return (
+                                        <span key={ayah.number} className={isCurrent ? "bg-[rgba(201,162,39,0.2)] rounded px-1 transition-colors duration-500" : ""}>
+                                            {ayah.text}
+                                            <span className="inline-flex items-center justify-center w-8 h-8 mx-1 text-xs border rounded-full align-middle relative top-1"
+                                                style={{ borderColor: 'var(--color-gold)', color: 'var(--color-gold)', background: 'rgba(201,162,39,0.05)' }}>
+                                                {ayah.numberInSurah}
+                                            </span>
+                                            {' '}
+                                        </span>
+                                    )
+                                })}
+                            </div>
+                            <div className="text-xs mt-4 text-center opacity-70" style={{ color: 'var(--color-gold)' }}>
+                                ﴿ صفحة {currentPage} ﴾
                             </div>
                         </div>
                     ) : (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react'
 import { quranService } from '../services/quran.service'
 import { userService } from '../services/users.service'
@@ -20,6 +20,9 @@ export default function PageViewerPage() {
     const { user } = useAuth()
     const queryClient = useQueryClient()
 
+    const [searchParams] = useSearchParams()
+    const isReadOnly = searchParams.get('mode') === 'read_only'
+
     const pageNum = Number(pageNumber)
     const [ayahs, setAyahs] = useState<PageAyah[]>([])
     const [loading, setLoading] = useState(true)
@@ -39,8 +42,8 @@ export default function PageViewerPage() {
     const handleNextPage = async () => {
         if (pageNum >= 604) return
 
-        // Update progress to the last ayah of the CURRENT page
-        if (user && ayahs.length > 0) {
+        // Update progress to the last ayah of the CURRENT page ONLY if not read-only
+        if (!isReadOnly && user && ayahs.length > 0) {
             setUpdating(true)
             const lastAyah = ayahs[ayahs.length - 1]
             try {
@@ -53,12 +56,12 @@ export default function PageViewerPage() {
             }
         }
 
-        navigate(`/page/${pageNum + 1}`)
+        navigate(`/page/${pageNum + 1}${isReadOnly ? '?mode=read_only' : ''}`)
     }
 
     const handlePrevPage = () => {
         if (pageNum <= 1) return
-        navigate(`/page/${pageNum - 1}`)
+        navigate(`/page/${pageNum - 1}${isReadOnly ? '?mode=read_only' : ''}`)
     }
 
     if (loading) {

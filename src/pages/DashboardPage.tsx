@@ -179,13 +179,23 @@ export default function DashboardPage() {
             </div>
 
             {/* View Surah text */}
-            <button
-                onClick={() => navigate(`/page/${currentPage}`)}
-                className="btn-secondary w-full flex items-center justify-center gap-2"
-            >
-                <BookOpen size={18} />
-                تابع القراءة (صفحة {currentPage})
-            </button>
+            {/* View Surah text */}
+            <div className="grid grid-cols-2 gap-3">
+                <button
+                    onClick={() => navigate(`/page/${currentPage}`)}
+                    className="btn-secondary flex items-center justify-center gap-2"
+                >
+                    <BookOpen size={18} />
+                    تابع القراءة
+                </button>
+                <button
+                    onClick={() => navigate('/page/1?mode=read_only')}
+                    className="btn-ghost flex items-center justify-center gap-2 border border-[rgba(255,255,255,0.1)]"
+                >
+                    <BookOpen size={18} />
+                    تصفح المصحف
+                </button>
+            </div>
         </div>
     )
 }

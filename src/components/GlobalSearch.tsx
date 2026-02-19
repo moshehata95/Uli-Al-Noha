@@ -44,6 +44,7 @@ export default function GlobalSearch() {
 
             // 3. Search Surah Names
             const surah = surahs.find(s =>
+                s.nameEn.toLowerCase() === lowerQuery ||
                 s.nameEn.toLowerCase().includes(lowerQuery) ||
                 s.nameAr.includes(query) ||
                 String(s.surahNumber) === lowerQuery
@@ -52,9 +53,7 @@ export default function GlobalSearch() {
             if (surah) {
                 navigate(`/surah/${surah.surahNumber}`)
             } else {
-                // If no exact match, maybe try to search ayah text? (Start with simple navigation first)
-                // For now, if no match, just do nothing or show toast (not implemented here yet)
-                alert('لم يتم العثور على سورة بهذا الاسم')
+                alert(`لم يتم العثور على سورة "${query}"`)
             }
         } catch (err) {
             console.error(err)

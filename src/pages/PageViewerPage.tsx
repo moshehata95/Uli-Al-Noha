@@ -103,7 +103,7 @@ export default function PageViewerPage() {
                     )}
                 </div>
 
-                <div dir="rtl" className="leading-[2.5] text-xl md:text-2xl text-justify" style={{ fontFamily: 'Noto Naskh Arabic' }}>
+                <div dir="rtl" className="quran-text text-justify">
                     {ayahs.map((ayah) => (
                         <span key={ayah.number}>
                             {ayah.text}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Amiri+Quran&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -191,3 +191,11 @@ html, body, #root {
 .rank-1 { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; }
 .rank-2 { background: linear-gradient(135deg, #c0c0c0, #808080); color: #000; }
 .rank-3 { background: linear-gradient(135deg, #cd7f32, #8b4513); color: #fff; }
+
+/* Quranic text — must use Amiri Quran for correct Uthmanic script rendering */
+.quran-text {
+  font-family: 'Amiri Quran', 'Noto Naskh Arabic', serif;
+  font-size: 1.4rem;
+  line-height: 2.8;
+  word-spacing: 0.05em;
+}

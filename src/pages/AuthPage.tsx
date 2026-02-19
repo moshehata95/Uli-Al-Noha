@@ -72,9 +72,9 @@ export default function AuthPage() {
             <div className="w-full max-w-md animate-fade-in-up">
                 {/* Logo */}
                 <div className="text-center mb-10">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl glow-gold mb-4"
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl glow-gold mb-4 overflow-hidden"
                         style={{ background: 'linear-gradient(135deg, #c9a227, #8b6914)' }}>
-                        <BookOpen size={40} color="#0a0e14" />
+                        <img src="/Icon.webp" alt="Logo" className="w-full h-full object-cover" />
                     </div>
                     <h1 className="text-3xl font-bold text-gold mb-1">أولي النهي</h1>
                     <p style={{ color: 'var(--color-text-muted)' }} className="text-sm">

@@ -21,9 +21,9 @@ export default function NavBar() {
             style={{ borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}>
             {/* Logo */}
             <NavLink to="/dashboard" className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"
                     style={{ background: 'linear-gradient(135deg, #c9a227, #8b6914)' }}>
-                    <BookOpen size={18} color="#0a0e14" />
+                    <img src="/Icon.webp" alt="Logo" className="w-full h-full object-cover" />
                 </div>
                 <span className="font-bold text-gold text-lg hidden sm:block">أولي النهي</span>
             </NavLink>

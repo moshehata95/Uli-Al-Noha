@@ -4,7 +4,7 @@ import { useUser } from '../hooks/useUser'
 import { useAyahMap, useSurah } from '../hooks/useSurahs'
 import { quranService } from '../services/quran.service'
 import { useNavigate } from 'react-router-dom'
-import GlobalSearch from '../components/GlobalSearch'
+
 
 export default function DashboardPage() {
     const { user, isLoading, advanceAyah, completeSurah } = useUser()
@@ -83,8 +83,6 @@ export default function DashboardPage() {
                 <p className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>أهلاً وسهلاً</p>
                 <h2 className="text-2xl font-bold">{user.name}</h2>
             </div>
-
-            <GlobalSearch />
 
             {/* Main progress card */}
             <div className="glass p-7 glow-gold">

@@ -90,8 +90,8 @@ export default function PageViewerPage() {
                 <div className="w-10"></div> {/* Spacer */}
             </div>
 
-            {/* Search Bar (Only visible if read-only or requested? User asked for it) */}
-            <div className="px-4 mb-4">
+            {/* Search Bar - Visible in both modes as it helps navigation, but user emphasized it for Read Only */}
+            <div className="px-4 mb-6">
                 <GlobalSearch />
             </div>
 

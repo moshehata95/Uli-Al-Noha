@@ -4,6 +4,7 @@ import { useUser } from '../hooks/useUser'
 import { useAyahMap, useSurah } from '../hooks/useSurahs'
 import { quranService } from '../services/quran.service'
 import { useNavigate } from 'react-router-dom'
+import GlobalSearch from '../components/GlobalSearch'
 
 export default function DashboardPage() {
     const { user, isLoading, advanceAyah, completeSurah } = useUser()
@@ -12,11 +13,13 @@ export default function DashboardPage() {
     const navigate = useNavigate()
     const [feedback, setFeedback] = useState<string | null>(null)
     const [ayahText, setAyahText] = useState<string | null>(null)
+    const [currentPage, setCurrentPage] = useState<number>(1)
 
-    // Fetch Ayah text when progress changes
+    // Fetch Ayah text and Page number when progress changes
     useEffect(() => {
         if (!user) return
         quranService.fetchAyahText(user.progressSurah, user.progressAyah).then(setAyahText)
+        quranService.getPageForAyah(user.progressSurah, user.progressAyah).then(p => p && setCurrentPage(p))
     }, [user?.progressSurah, user?.progressAyah])
 
     const showFeedback = (msg: string) => {
@@ -74,6 +77,8 @@ export default function DashboardPage() {
                 <p className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-muted)' }}>أهلاً وسهلاً</p>
                 <h2 className="text-2xl font-bold">{user.name}</h2>
             </div>
+
+            <GlobalSearch />
 
             {/* Main progress card */}
             <div className="glass p-7 glow-gold">
@@ -175,11 +180,11 @@ export default function DashboardPage() {
 
             {/* View Surah text */}
             <button
-                onClick={() => navigate(`/surah/${user.progressSurah}`)}
+                onClick={() => navigate(`/page/${currentPage}`)}
                 className="btn-secondary w-full flex items-center justify-center gap-2"
             >
                 <BookOpen size={18} />
-                اقرأ سورة {surahData?.nameAr}
+                تابع القراءة (صفحة {currentPage})
             </button>
         </div>
     )

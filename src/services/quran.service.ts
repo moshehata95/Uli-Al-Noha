@@ -69,6 +69,67 @@ export const quranService = {
             return null
         }
     },
+
+    async getPageData(pageNumber: number): Promise<{
+        ayahs: {
+            surah: { number: number; name: string; nameEn: string; englishNameTranslation: string; revelationType: string }
+            numberInSurah: number
+            text: string
+            number: number
+            juz: number
+            manzil: number
+            page: number
+            ruku: number
+            hizbQuarter: number
+            sajda: boolean
+        }[]
+    } | null> {
+        try {
+            const res = await fetch(`https://api.alquran.cloud/v1/page/${pageNumber}/quran-uthmani`)
+            const json = await res.json()
+            if (json.code !== 200) return null
+            return {
+                ayahs: json.data.ayahs,
+            }
+        } catch {
+            return null
+        }
+    },
+
+    async getPageForAyah(surahNumber: number, ayahNumber: number): Promise<number | null> {
+        const { data, error } = await supabase
+            .from('quran_ayah_map')
+            .select('page_number')
+            .eq('surah_number', surahNumber)
+            .eq('ayah_number', ayahNumber)
+            .maybeSingle()
+        if (error || !data) return null
+        return (data as any).page_number
+    },
+
+    async getJuzStartPage(juzNumber: number): Promise<number | null> {
+        const { data, error } = await supabase
+            .from('quran_ayah_map')
+            .select('page_number')
+            .eq('juz_number', juzNumber)
+            .order('surah_number', { ascending: true })
+            .order('ayah_number', { ascending: true })
+            .limit(1)
+            .maybeSingle()
+        if (error || !data) return null
+        return (data as any).page_number
+    },
+
+    async getSurahStartPage(surahNumber: number): Promise<number | null> {
+        const { data, error } = await supabase
+            .from('quran_ayah_map')
+            .select('page_number')
+            .eq('surah_number', surahNumber)
+            .eq('ayah_number', 1)
+            .maybeSingle()
+        if (error || !data) return null
+        return (data as any).page_number
+    },
 }
 
 function mapSurah(row: Record<string, unknown>): Surah {

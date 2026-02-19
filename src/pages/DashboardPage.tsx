@@ -3,7 +3,9 @@ import { Loader2, ChevronRight, Bookmark, BookOpen } from 'lucide-react'
 import { useUser } from '../hooks/useUser'
 import { useAyahMap, useSurah } from '../hooks/useSurahs'
 import { quranService } from '../services/quran.service'
+import { userService } from '../services/users.service'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 
 
 export default function DashboardPage() {
@@ -14,6 +16,8 @@ export default function DashboardPage() {
     const [feedback, setFeedback] = useState<string | null>(null)
     const [pageAyahs, setPageAyahs] = useState<any[]>([])
     const [currentPage, setCurrentPage] = useState<number>(1)
+    const [isLastPageOfSurah, setIsLastPageOfSurah] = useState(false)
+    const queryClient = useQueryClient() // Add queryClient for manual invalidation if needed
 
     // Fetch Page Data instead of single Ayah
     useEffect(() => {
@@ -22,11 +26,21 @@ export default function DashboardPage() {
             if (p) {
                 setCurrentPage(p)
                 quranService.getPageData(p).then(data => {
-                    if (data) setPageAyahs(data.ayahs)
+                    if (data) {
+                        setPageAyahs(data.ayahs)
+                        // Check if this page contains the last ayah of the current surah
+                        if (surahData) {
+                            const lastAyahOfSurah = data.ayahs.find(a =>
+                                a.surah.number === user.progressSurah &&
+                                a.numberInSurah === surahData.ayahCount
+                            )
+                            setIsLastPageOfSurah(!!lastAyahOfSurah)
+                        }
+                    }
                 })
             }
         })
-    }, [user?.progressSurah, user?.progressAyah])
+    }, [user?.progressSurah, user?.progressAyah, surahData])
 
     const showFeedback = (msg: string) => {
         setFeedback(msg)
@@ -46,11 +60,35 @@ export default function DashboardPage() {
         }
     }
 
-    const handleComplete = async () => {
+    const handleCompletePage = async () => {
+        // If it's the last page of Surah, use the existing completeSurah
+        if (isLastPageOfSurah) {
+            try {
+                const result = await completeSurah.mutateAsync(undefined)
+                showFeedback(`🌟 ماشاء الله! انتقلت إلى سورة ${result?.new_surah}`)
+            } catch {
+                showFeedback('حدث خطأ، يرجى المحاولة مجدداً')
+            }
+            return
+        }
+
+        // Otherwise, move to the next page
+        const nextPage = currentPage + 1
+        if (nextPage > 604) return // End of Quran
+
+        // We need to find the first ayah of the next page to set progress
         try {
-            const result = await completeSurah.mutateAsync(undefined)
-            showFeedback(`🌟 ماشاء الله! انتقلت إلى سورة ${result?.new_surah}`)
-        } catch {
+            const nextPageData = await quranService.getPageData(nextPage)
+            if (nextPageData && nextPageData.ayahs.length > 0) {
+                const firstAyah = nextPageData.ayahs[0]
+                // Optimistically update
+                await userService.setProgress(user!.id, firstAyah.surah.number, firstAyah.numberInSurah)
+                // Invalidate user query to refresh data
+                queryClient.invalidateQueries({ queryKey: ['user'] })
+                showFeedback(`✅ أتممت الصفحة ${currentPage}`)
+            }
+        } catch (e) {
+            console.error(e)
             showFeedback('حدث خطأ، يرجى المحاولة مجدداً')
         }
     }
@@ -65,8 +103,29 @@ export default function DashboardPage() {
 
     if (!user) return null
 
+    // Progress bar calculation based on PAGES
+    // Total pages in Quran = 604
+    // This is global progress. 
+    // User wants "calculation for it for the progress bar ofcourse"
+    // If they mean "Current Surah Progress":
+    // We need start page of Surah and end page of Surah.
+    // Let's stick to the existing "Surah Progress" but maybe refine it?
+    // Actually, user said "make it... 'Complete Page'... and the calculation for it for the progress bar".
+    // This likely means the progress bar should represent pages completed in the current Surah.
+
+    // To do this strictly:
+    // (Current Page - Start Page of Surah) / (End Page of Surah - Start Page of Surah)
+    // But we don't easily have "End Page of Surah" without fetching/map.
+
+    // Fallback: Stick to Ayah progress for the bar (it's accurate enough usually), 
+    // OR allow the "Global Quran Progress" to be the main simple indicator?
+    // The previous code had 2 bars: "Ayah/Surah Progress" and "Quran Progress".
+    // I will update the text to say "Page X" maybe?
+
+    // Let's keep Ayah-based percentage for now as it's the most granular and accurate "completion" metric.
+    // Changing to page-based percentage requires knowing exactly how many pages the surah takes.
     const progress = surahData ? Math.round((user.progressAyah / surahData.ayahCount) * 100) : 0
-    const quranProgress = Math.round(((user.progressSurah - 1) / 114) * 100)
+    const quranProgress = Math.round(((user.progressSurah - 1) / 114) * 100) // Rough estimate by Surah
 
     return (
         <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
@@ -152,12 +211,12 @@ export default function DashboardPage() {
                         تقدم آية
                     </button>
                     <button
-                        onClick={handleComplete}
+                        onClick={handleCompletePage}
                         disabled={completeSurah.isPending || user.progressSurah >= 114}
                         className="btn-secondary flex items-center justify-center gap-2"
                     >
                         {completeSurah.isPending ? <Loader2 size={16} className="animate-spin" /> : <BookOpen size={18} />}
-                        أتممت السورة
+                        {isLastPageOfSurah ? 'أتممت السورة' : 'أتممت الصفحة'}
                     </button>
                 </div>
 
@@ -184,8 +243,6 @@ export default function DashboardPage() {
                         </div>
                     ))}
                 </div>
-
-
 
                 {user.progressSurah >= 114 && (
                     <div className="mt-4 text-center p-4 rounded-xl"

@@ -5,6 +5,7 @@ import { quranService } from '../services/quran.service'
 import { userService } from '../services/users.service'
 import { useAuth } from '../hooks/useAuth'
 import { useQueryClient } from '@tanstack/react-query'
+import GlobalSearch from '../components/GlobalSearch'
 
 interface PageAyah {
     surah: { number: number; name: string; nameEn: string }
@@ -87,6 +88,11 @@ export default function PageViewerPage() {
                     <p className="text-xs opacity-60">صفحة {pageNum}</p>
                 </div>
                 <div className="w-10"></div> {/* Spacer */}
+            </div>
+
+            {/* Search Bar (Only visible if read-only or requested? User asked for it) */}
+            <div className="px-4 mb-4">
+                <GlobalSearch />
             </div>
 
             {/* Content */}

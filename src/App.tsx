@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuth } from './hooks/useAuth'
 import { useAuthStore } from './stores/authStore'
 import NavBar from './components/NavBar'
+import Footer from './components/Footer'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import GroupsPage from './pages/GroupsPage'
@@ -53,9 +54,9 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-bg)' }}>
       <NavBar />
-      <main className="pt-[72px] pb-12 px-4 max-w-4xl mx-auto">
+      <main className="pt-[72px] pb-12 px-4 max-w-4xl mx-auto flex-1 w-full">
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/auth" element={<Navigate to="/dashboard" replace />} />
@@ -68,6 +69,7 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
+      <Footer />
     </div>
   )
 }

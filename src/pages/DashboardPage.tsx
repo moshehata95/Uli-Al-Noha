@@ -165,15 +165,25 @@ export default function DashboardPage() {
                             <div dir="rtl" className="quran-text text-justify text-white">
                                 {pageAyahs.map((ayah) => {
                                     const isCurrent = ayah.numberInSurah === user.progressAyah && ayah.surah.number === user.progressSurah
-                                    const BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
-                                    const startsWithBismillah = ayah.text.startsWith('بِسْمِ اللَّهِ')
-                                    const remainingText = startsWithBismillah
-                                        ? ayah.text.slice(ayah.text.indexOf(BISMILLAH) + BISMILLAH.length).trim()
-                                        : ayah.text
+                                    // no 'g' on the test regex — 'g' causes .test() to track lastIndex between calls
+                                    const DIACRITIC_TEST = /[\u0610-\u061A\u064B-\u065F\u0670]/
+                                    const BARE_BISMILLAH = 'بسم الله الرحمن الرحيم'
+                                    const BISMILLAH_DISPLAY = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
+                                    const bare = ayah.text.replace(/[\u0610-\u061A\u064B-\u065F\u0670]/g, '')
+                                    const hasBismillah = bare.startsWith(BARE_BISMILLAH)
+                                    let bismillahEnd = 0
+                                    if (hasBismillah) {
+                                        let count = 0
+                                        while (count < BARE_BISMILLAH.length && bismillahEnd < ayah.text.length) {
+                                            if (!DIACRITIC_TEST.test(ayah.text[bismillahEnd])) count++
+                                            bismillahEnd++
+                                        }
+                                    }
+                                    const remainingText = hasBismillah ? ayah.text.slice(bismillahEnd).trim() : ayah.text
                                     return (
                                         <Fragment key={ayah.number}>
-                                            {startsWithBismillah && (
-                                                <div className="bismillah-line">{BISMILLAH}</div>
+                                            {hasBismillah && (
+                                                <div className="bismillah-line">{BISMILLAH_DISPLAY}</div>
                                             )}
                                             <span className={isCurrent ? 'bg-[rgba(201,162,39,0.2)] rounded px-1 transition-colors duration-500' : ''}>
                                                 {remainingText}

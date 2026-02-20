@@ -1,6 +1,6 @@
 import { useEffect, useState, Fragment } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Loader2, ChevronRight, ChevronLeft } from 'lucide-react'
 import { quranService } from '../services/quran.service'
 import { userService } from '../services/users.service'
 import { useAuth } from '../hooks/useAuth'
@@ -18,6 +18,26 @@ interface PageAyah {
 // Convert Western Arabic numerals to Eastern Arabic (١٢٣ ...)
 function toEasternArabic(n: number): string {
     return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[+d])
+}
+
+// Strip Arabic diacritics/harakat for comparison (handles Unicode ordering differences)
+// NOTE: no 'g' flag — using 'g' with .test() causes lastIndex to persist between calls
+const DIACRITIC_RE = /[\u0610-\u061A\u064B-\u065F\u0670]/
+function stripDiacritics(s: string) { return s.replace(/[\u0610-\u061A\u064B-\u065F\u0670]/g, '') }
+
+// Bare Bismillah for detection (without any diacritics)
+const BARE_BISMILLAH = 'بسم الله الرحمن الرحيم'
+const BISMILLAH_DISPLAY = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
+
+// Find where Bismillah ends in the original diacriticized string
+function getBismillahEnd(text: string): number {
+    let bareCount = 0
+    let i = 0
+    while (bareCount < BARE_BISMILLAH.length && i < text.length) {
+        if (!DIACRITIC_RE.test(text[i])) bareCount++
+        i++
+    }
+    return i
 }
 
 export default function PageViewerPage() {
@@ -86,7 +106,7 @@ export default function PageViewerPage() {
             {/* Header */}
             <div className="flex items-center justify-between pt-4 px-2">
                 <button onClick={() => navigate('/')} className="btn-ghost p-2 rounded-xl">
-                    <ArrowRight size={20} />
+                    <ChevronRight size={20} />
                 </button>
                 <div className="text-center">
                     <h2 className="text-lg font-bold" dir="rtl">{surahName}</h2>
@@ -110,19 +130,17 @@ export default function PageViewerPage() {
 
                 <div dir="rtl" className="quran-text text-justify">
                     {ayahs.map((ayah) => {
-                        // The API embeds the Bismillah inside the first ayah's text.
-                        // Use Fragment so the Bismillah div is a true block sibling, not nested inside an inline span.
-                        const BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
-                        const startsWithBismillah = ayah.text.startsWith('بِسْمِ اللَّهِ')
-                        const remainingText = startsWithBismillah
-                            ? ayah.text.slice(ayah.text.indexOf(BISMILLAH) + BISMILLAH.length).trim()
+                        const hasBismillah = stripDiacritics(ayah.text).startsWith(BARE_BISMILLAH)
+                        const bismillahEnd = hasBismillah ? getBismillahEnd(ayah.text) : 0
+                        const remainingText = hasBismillah
+                            ? ayah.text.slice(bismillahEnd).trim()
                             : ayah.text
 
                         return (
                             <Fragment key={ayah.number}>
-                                {startsWithBismillah && (
+                                {hasBismillah && (
                                     <div className="bismillah-line">
-                                        {BISMILLAH}
+                                        {BISMILLAH_DISPLAY}
                                     </div>
                                 )}
                                 <span>
@@ -139,14 +157,14 @@ export default function PageViewerPage() {
                 </div>
             </div>
 
-            {/* Pagination — RTL Quran layout: Next (التالية) on LEFT, Previous (السابقة) on RIGHT */}
+            {/* Pagination — standard web nav: السابقة on LEFT, التالية on RIGHT */}
             <div className="fixed bottom-0 left-0 right-0 p-4 glass border-t border-[rgba(255,255,255,0.05)] flex justify-between items-center max-w-2xl mx-auto">
                 <button
-                    onClick={handleNextPage}
-                    disabled={pageNum >= 604 || updating}
-                    className="btn-primary flex items-center gap-2 text-sm px-6 py-2"
+                    onClick={handlePrevPage}
+                    disabled={pageNum <= 1}
+                    className="btn-ghost flex items-center gap-2 text-sm disabled:opacity-30"
                 >
-                    {updating ? <Loader2 size={16} className="animate-spin" /> : <><ArrowLeft size={16} /> التالية</>}
+                    <ChevronRight size={18} /> السابقة
                 </button>
 
                 <div className="text-xs font-mono opacity-50">
@@ -154,11 +172,13 @@ export default function PageViewerPage() {
                 </div>
 
                 <button
-                    onClick={handlePrevPage}
-                    disabled={pageNum <= 1}
-                    className="btn-ghost flex items-center gap-2 text-sm disabled:opacity-30"
+                    onClick={handleNextPage}
+                    disabled={pageNum >= 604 || updating}
+                    className="btn-primary flex items-center gap-2 text-sm px-6 py-2"
                 >
-                    السابقة <ArrowRight size={16} />
+                    {updating
+                        ? <Loader2 size={16} className="animate-spin" />
+                        : <>التالية <ChevronLeft size={18} /></>}
                 </button>
             </div>
 

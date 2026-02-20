@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { Loader2, ChevronRight, Bookmark, BookOpen } from 'lucide-react'
 import { useUser } from '../hooks/useUser'
 import { useAyahMap, useSurah } from '../hooks/useSurahs'
@@ -171,25 +171,19 @@ export default function DashboardPage() {
                                         ? ayah.text.slice(ayah.text.indexOf(BISMILLAH) + BISMILLAH.length).trim()
                                         : ayah.text
                                     return (
-                                        <span key={ayah.number} className={isCurrent ? 'bg-[rgba(201,162,39,0.2)] rounded px-1 transition-colors duration-500' : ''}>
+                                        <Fragment key={ayah.number}>
                                             {startsWithBismillah && (
-                                                <span style={{
-                                                    display: 'block',
-                                                    textAlign: 'center',
-                                                    margin: '1.2rem 0 0.8rem',
-                                                    fontSize: '1.45rem',
-                                                    color: 'var(--color-gold-light)',
-                                                }}>
-                                                    {BISMILLAH}
-                                                </span>
+                                                <div className="bismillah-line">{BISMILLAH}</div>
                                             )}
-                                            {remainingText}
-                                            {remainingText && (
-                                                <span className="ayah-marker">
-                                                    ﴾{String(ayah.numberInSurah).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[+d])}﴿
-                                                </span>
-                                            )}{' '}
-                                        </span>
+                                            <span className={isCurrent ? 'bg-[rgba(201,162,39,0.2)] rounded px-1 transition-colors duration-500' : ''}>
+                                                {remainingText}
+                                                {remainingText && (
+                                                    <span className="ayah-marker">
+                                                        ﴾{String(ayah.numberInSurah).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[+d])}﴿
+                                                    </span>
+                                                )}{' '}
+                                            </span>
+                                        </Fragment>
                                     )
                                 })}
                             </div>

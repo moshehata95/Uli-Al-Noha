@@ -253,3 +253,14 @@ body,
   white-space: nowrap;
   letter-spacing: 0.02em;
 }
+
+/* Bismillah — must be a true block element so it sits on its own line */
+.bismillah-line {
+  display: block;
+  text-align: center;
+  margin: 1.2rem 0 0.8rem;
+  font-family: 'Amiri Quran', 'Noto Naskh Arabic', serif;
+  font-size: 1.5rem;
+  color: var(--color-gold-light);
+  letter-spacing: 0.01em;
+}

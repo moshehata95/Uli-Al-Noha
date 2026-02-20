@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react'
 import { quranService } from '../services/quran.service'
@@ -111,7 +111,7 @@ export default function PageViewerPage() {
                 <div dir="rtl" className="quran-text text-justify">
                     {ayahs.map((ayah) => {
                         // The API embeds the Bismillah inside the first ayah's text.
-                        // Detect it by checking if the text starts with بِسْمِ اللَّهِ
+                        // Use Fragment so the Bismillah div is a true block sibling, not nested inside an inline span.
                         const BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
                         const startsWithBismillah = ayah.text.startsWith('بِسْمِ اللَّهِ')
                         const remainingText = startsWithBismillah
@@ -119,45 +119,34 @@ export default function PageViewerPage() {
                             : ayah.text
 
                         return (
-                            <span key={ayah.number}>
+                            <Fragment key={ayah.number}>
                                 {startsWithBismillah && (
-                                    <span
-                                        dir="rtl"
-                                        style={{
-                                            display: 'block',
-                                            textAlign: 'center',
-                                            margin: '1.2rem 0 0.8rem',
-                                            fontSize: '1.45rem',
-                                            letterSpacing: '0.01em',
-                                            color: 'var(--color-gold-light)',
-                                        }}
-                                    >
+                                    <div className="bismillah-line">
                                         {BISMILLAH}
-                                    </span>
+                                    </div>
                                 )}
-                                {remainingText}
-                                {remainingText && (
-                                    <span
-                                        className="ayah-marker"
-                                    >
-                                        ﴾{toEasternArabic(ayah.numberInSurah)}﴿
-                                    </span>
-                                )}{' '}
-                            </span>
+                                <span>
+                                    {remainingText}
+                                    {remainingText && (
+                                        <span className="ayah-marker">
+                                            ﴾{toEasternArabic(ayah.numberInSurah)}﴿
+                                        </span>
+                                    )}{' '}
+                                </span>
+                            </Fragment>
                         )
                     })}
                 </div>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination — RTL Quran layout: Next (التالية) on LEFT, Previous (السابقة) on RIGHT */}
             <div className="fixed bottom-0 left-0 right-0 p-4 glass border-t border-[rgba(255,255,255,0.05)] flex justify-between items-center max-w-2xl mx-auto">
                 <button
-                    onClick={handlePrevPage}
-                    disabled={pageNum <= 1}
-                    className="btn-ghost flex items-center gap-2 text-sm disabled:opacity-30"
+                    onClick={handleNextPage}
+                    disabled={pageNum >= 604 || updating}
+                    className="btn-primary flex items-center gap-2 text-sm px-6 py-2"
                 >
-                    <ArrowRight size={16} />
-                    السابقة
+                    {updating ? <Loader2 size={16} className="animate-spin" /> : <><ArrowLeft size={16} /> التالية</>}
                 </button>
 
                 <div className="text-xs font-mono opacity-50">
@@ -165,11 +154,11 @@ export default function PageViewerPage() {
                 </div>
 
                 <button
-                    onClick={handleNextPage}
-                    disabled={pageNum >= 604 || updating}
-                    className="btn-primary flex items-center gap-2 text-sm px-6 py-2"
+                    onClick={handlePrevPage}
+                    disabled={pageNum <= 1}
+                    className="btn-ghost flex items-center gap-2 text-sm disabled:opacity-30"
                 >
-                    {updating ? <Loader2 size={16} className="animate-spin" /> : <div className="flex items-center gap-2">التالية <ArrowLeft size={16} /></div>}
+                    السابقة <ArrowRight size={16} />
                 </button>
             </div>
 

@@ -15,6 +15,11 @@ interface PageAyah {
     page: number
 }
 
+// Convert Western Arabic numerals to Eastern Arabic (١٢٣ ...)
+function toEasternArabic(n: number): string {
+    return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[+d])
+}
+
 export default function PageViewerPage() {
     const { pageNumber } = useParams<{ pageNumber: string }>()
     const navigate = useNavigate()
@@ -104,16 +109,43 @@ export default function PageViewerPage() {
                 </div>
 
                 <div dir="rtl" className="quran-text text-justify">
-                    {ayahs.map((ayah) => (
-                        <span key={ayah.number}>
-                            {ayah.text}
-                            <span className="inline-flex items-center justify-center w-8 h-8 mx-1 text-xs border rounded-full align-middle relative top-1"
-                                style={{ borderColor: 'var(--color-gold)', color: 'var(--color-gold)', background: 'rgba(201,162,39,0.05)' }}>
-                                {ayah.numberInSurah}
+                    {ayahs.map((ayah) => {
+                        // The API embeds the Bismillah inside the first ayah's text.
+                        // Detect it by checking if the text starts with بِسْمِ اللَّهِ
+                        const BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
+                        const startsWithBismillah = ayah.text.startsWith('بِسْمِ اللَّهِ')
+                        const remainingText = startsWithBismillah
+                            ? ayah.text.slice(ayah.text.indexOf(BISMILLAH) + BISMILLAH.length).trim()
+                            : ayah.text
+
+                        return (
+                            <span key={ayah.number}>
+                                {startsWithBismillah && (
+                                    <span
+                                        dir="rtl"
+                                        style={{
+                                            display: 'block',
+                                            textAlign: 'center',
+                                            margin: '1.2rem 0 0.8rem',
+                                            fontSize: '1.45rem',
+                                            letterSpacing: '0.01em',
+                                            color: 'var(--color-gold-light)',
+                                        }}
+                                    >
+                                        {BISMILLAH}
+                                    </span>
+                                )}
+                                {remainingText}
+                                {remainingText && (
+                                    <span
+                                        className="ayah-marker"
+                                    >
+                                        ﴾{toEasternArabic(ayah.numberInSurah)}﴿
+                                    </span>
+                                )}{' '}
                             </span>
-                            {' '}
-                        </span>
-                    ))}
+                        )
+                    })}
                 </div>
             </div>
 

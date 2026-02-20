@@ -1,11 +1,12 @@
 import { useState, useEffect, Fragment } from 'react'
-import { Loader2, ChevronRight, Bookmark, BookOpen } from 'lucide-react'
+import { Loader2, ChevronRight, Bookmark, BookOpen, Download } from 'lucide-react'
 import { useUser } from '../hooks/useUser'
 import { useAyahMap, useSurah } from '../hooks/useSurahs'
 import { quranService } from '../services/quran.service'
 import { userService } from '../services/users.service'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
+import { usePWAInstall } from '../hooks/usePWAInstall'
 
 
 export default function DashboardPage() {
@@ -13,11 +14,20 @@ export default function DashboardPage() {
     const { data: surahData } = useSurah(user?.progressSurah)
     const { data: ayahMap } = useAyahMap(user?.progressSurah ?? null, user?.progressAyah ?? null)
     const navigate = useNavigate()
+    const { isInstallable, installApp } = usePWAInstall()
     const [feedback, setFeedback] = useState<string | null>(null)
     const [pageAyahs, setPageAyahs] = useState<any[]>([])
     const [currentPage, setCurrentPage] = useState<number>(1)
     const [isLastPageOfSurah, setIsLastPageOfSurah] = useState(false)
-    const queryClient = useQueryClient() // Add queryClient for manual invalidation if needed
+    const queryClient = useQueryClient()
+    const [fontSize, setFontSize] = useState<number>(() => {
+        try { return parseFloat(localStorage.getItem('quran_font_size') || '1.5') } catch { return 1.5 }
+    })
+    const changeFontSize = (v: number) => {
+        const c = Math.min(2.8, Math.max(1.0, Math.round(v * 20) / 20))
+        setFontSize(c)
+        try { localStorage.setItem('quran_font_size', String(c)) } catch { /* ignore */ }
+    }
 
     // Fetch Page Data instead of single Ayah
     useEffect(() => {
@@ -159,27 +169,41 @@ export default function DashboardPage() {
                         {surahData?.nameEn}
                     </p>
 
+                    {/* Zoom slider */}
+                    {pageAyahs.length > 0 && (
+                        <div className="flex items-center gap-3 mb-4 px-1">
+                            <span style={{ fontSize: '0.75rem', fontFamily: 'Scheherazade New, serif', opacity: 0.4 }}>أ</span>
+                            <input
+                                aria-label="حجم الخط"
+                                type="range" min="1" max="2.8" step="0.05"
+                                value={fontSize}
+                                onChange={e => changeFontSize(parseFloat(e.target.value))}
+                                className="quran-size-slider flex-1"
+                            />
+                            <span style={{ fontSize: '1.3rem', fontFamily: 'Scheherazade New, serif', opacity: 0.4 }}>أ</span>
+                        </div>
+                    )}
+
                     {/* Page Text Display */}
                     {pageAyahs.length > 0 ? (
                         <div className="mb-8 relative py-4 px-2">
-                            <div dir="rtl" className="quran-text text-justify text-white">
+                            <div dir="rtl" className="quran-text text-justify text-white" style={{ fontSize: `${fontSize}rem` }}>
                                 {pageAyahs.map((ayah) => {
                                     const isCurrent = ayah.numberInSurah === user.progressAyah && ayah.surah.number === user.progressSurah
-                                    // no 'g' on the test regex — 'g' causes .test() to track lastIndex between calls
-                                    const DIACRITIC_TEST = /[\u0610-\u061A\u064B-\u065F\u0670]/
-                                    const BARE_BISMILLAH = 'بسم الله الرحمن الرحيم'
+                                    // Regex-based bismillah detection — same approach as PageViewerPage
+                                    const D = '[\\u0610-\\u061A\\u064B-\\u065F\\u0670]*'
+                                    const BISM_RE = new RegExp(
+                                        `^${D}ب${D}س${D}م${D}\\s+` +
+                                        `${D}ا${D}ل${D}ل${D}ه${D}\\s+` +
+                                        `${D}ا${D}ل${D}ر${D}ح${D}م${D}ن${D}\\s+` +
+                                        `${D}ا${D}ل${D}ر${D}ح${D}ي${D}م${D}\\s*`
+                                    )
+                                    const hasBismillah = BISM_RE.test(ayah.text)
+                                    let remainingText = hasBismillah
+                                        ? ayah.text.replace(BISM_RE, '').trim()
+                                            .replace(/^[\u0610-\u061A\u064B-\u065F\u0670]+/, '').trim()
+                                        : ayah.text
                                     const BISMILLAH_DISPLAY = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
-                                    const bare = ayah.text.replace(/[\u0610-\u061A\u064B-\u065F\u0670]/g, '')
-                                    const hasBismillah = bare.startsWith(BARE_BISMILLAH)
-                                    let bismillahEnd = 0
-                                    if (hasBismillah) {
-                                        let count = 0
-                                        while (count < BARE_BISMILLAH.length && bismillahEnd < ayah.text.length) {
-                                            if (!DIACRITIC_TEST.test(ayah.text[bismillahEnd])) count++
-                                            bismillahEnd++
-                                        }
-                                    }
-                                    const remainingText = hasBismillah ? ayah.text.slice(bismillahEnd).trim() : ayah.text
                                     return (
                                         <Fragment key={ayah.number}>
                                             {hasBismillah && (
@@ -189,7 +213,7 @@ export default function DashboardPage() {
                                                 {remainingText}
                                                 {remainingText && (
                                                     <span className="ayah-marker">
-                                                        ﴾{String(ayah.numberInSurah).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[+d])}﴿
+                                                        {String(ayah.numberInSurah).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[+d])}
                                                     </span>
                                                 )}{' '}
                                             </span>
@@ -333,21 +357,23 @@ export default function DashboardPage() {
                 <h3 className="text-sm font-bold mb-3 pr-2 border-r-2 border-[var(--color-gold)]" style={{ color: 'var(--color-text-muted)' }}>
                     المصحف الشريف
                 </h3>
-                <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className={`grid ${isInstallable ? 'grid-cols-2' : 'grid-cols-1'} gap-3 mb-6`}>
                     <button
-                        onClick={() => navigate(`/page/${currentPage}`)}
+                        onClick={() => navigate('/browse')}
                         className="btn-secondary flex items-center justify-center gap-2"
-                    >
-                        <BookOpen size={18} />
-                        تابع القراءة
-                    </button>
-                    <button
-                        onClick={() => navigate('/page/1?mode=read_only')}
-                        className="btn-ghost flex items-center justify-center gap-2 border border-[rgba(255,255,255,0.1)]"
                     >
                         <BookOpen size={18} />
                         تصفح المصحف
                     </button>
+                    {isInstallable && (
+                        <button
+                            onClick={installApp}
+                            className="install-glow-btn flex items-center justify-center gap-2 rounded-xl text-sm font-bold py-2.5 px-4 transition-all"
+                        >
+                            <Download size={18} />
+                            تثبيت التطبيق
+                        </button>
+                    )}
                 </div>
 
                 <div className="text-center">

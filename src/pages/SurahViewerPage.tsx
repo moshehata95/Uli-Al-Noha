@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { quranService } from '../services/quran.service'
 
 export default function SurahViewerPage() {
     const { surahNumber } = useParams<{ surahNumber: string }>()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
+    const mode = searchParams.get('mode')
 
     useEffect(() => {
         const num = Number(surahNumber)
@@ -14,15 +16,15 @@ export default function SurahViewerPage() {
             return
         }
 
-        // Fetch start page and redirect
         quranService.getSurahStartPage(num).then((page) => {
             if (page) {
-                navigate(`/page/${page}`, { replace: true })
+                const modeParam = mode ? `?mode=${mode}` : ''
+                navigate(`/page/${page}${modeParam}`, { replace: true })
             } else {
                 navigate('/')
             }
         })
-    }, [surahNumber, navigate])
+    }, [surahNumber, navigate, mode])
 
     return (
         <div className="flex justify-center py-20">

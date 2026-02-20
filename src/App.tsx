@@ -11,6 +11,7 @@ import GroupDetailPage from './pages/GroupDetailPage'
 import JoinGroupPage from './pages/JoinGroupPage'
 import SurahViewerPage from './pages/SurahViewerPage'
 import PageViewerPage from './pages/PageViewerPage'
+import SurahBrowserPage from './pages/SurahBrowserPage'
 import { Loader2 } from 'lucide-react'
 
 const queryClient = new QueryClient({
@@ -66,6 +67,7 @@ function AppContent() {
           <Route path="/join/:inviteCode" element={<JoinGroupPage />} />
           <Route path="/surah/:surahNumber" element={<SurahViewerPage />} />
           <Route path="/page/:pageNumber" element={<PageViewerPage />} />
+          <Route path="/browse" element={<SurahBrowserPage />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>

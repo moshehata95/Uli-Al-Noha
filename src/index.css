@@ -241,16 +241,25 @@ body,
   word-spacing: 0.08em;
 }
 
-/* Elegant ayah end marker ﴾١﴿ */
+/* Ayah number — small circle badge */
 .ayah-marker {
-  display: inline;
-  font-family: 'Scheherazade New', 'Noto Naskh Arabic', serif;
-  font-size: 0.85em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-gold);
   color: var(--color-gold);
-  opacity: 0.85;
-  margin: 0 0.3rem;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.55em;
+  font-weight: 600;
+  margin: 0 0.2rem;
   vertical-align: middle;
-  white-space: nowrap;
+  position: relative;
+  top: -0.1em;
+  background: rgba(201, 162, 39, 0.06);
+  line-height: 1;
 }
 
 /* Bismillah — must be a true block element so it sits on its own line */
@@ -297,4 +306,30 @@ body,
   background: var(--color-gold);
   cursor: pointer;
   border: none;
+}
+
+/* Glowing install button */
+.install-glow-btn {
+  background: rgba(201, 162, 39, 0.12);
+  border: 1.5px solid var(--color-gold);
+  color: var(--color-gold-light);
+  box-shadow: 0 0 12px rgba(201, 162, 39, 0.3), 0 0 24px rgba(201, 162, 39, 0.1);
+  animation: install-pulse 2s ease-in-out infinite;
+}
+
+.install-glow-btn:hover {
+  background: rgba(201, 162, 39, 0.22);
+  box-shadow: 0 0 18px rgba(201, 162, 39, 0.5), 0 0 36px rgba(201, 162, 39, 0.2);
+}
+
+@keyframes install-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(201, 162, 39, 0.3), 0 0 24px rgba(201, 162, 39, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(201, 162, 39, 0.5), 0 0 40px rgba(201, 162, 39, 0.2);
+  }
 }

@@ -10,8 +10,13 @@ export function usePWAInstall() {
     const [isInstalled, setIsInstalled] = useState(false)
 
     useEffect(() => {
-        // Check if already installed
+        // Check if already installed (Android Chrome + most browsers)
         if (window.matchMedia('(display-mode: standalone)').matches) {
+            setIsInstalled(true)
+        }
+
+        // Check if already installed (iOS Safari)
+        if ((navigator as any).standalone === true) {
             setIsInstalled(true)
         }
 
@@ -20,11 +25,13 @@ export function usePWAInstall() {
             e.preventDefault()
             // Stash the event so it can be triggered later.
             setDeferredPrompt(e as BeforeInstallPromptEvent)
+            console.log('[PWA] Install prompt available')
         }
 
         const handleAppInstalled = () => {
             setIsInstalled(true)
             setDeferredPrompt(null)
+            console.log('[PWA] App installed')
         }
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
@@ -43,7 +50,8 @@ export function usePWAInstall() {
         deferredPrompt.prompt()
 
         // Wait for the user to respond to the prompt
-        await deferredPrompt.userChoice
+        const choice = await deferredPrompt.userChoice
+        console.log('[PWA] User choice:', choice.outcome)
 
         // We've used the prompt, and can't use it again, throw it away
         setDeferredPrompt(null)

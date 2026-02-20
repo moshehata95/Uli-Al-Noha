@@ -162,17 +162,33 @@ export default function DashboardPage() {
                     {/* Page Text Display */}
                     {pageAyahs.length > 0 ? (
                         <div className="mb-8 relative py-4 px-2">
-                            <div dir="rtl" className="leading-[2.5] text-xl md:text-2xl text-justify text-white" style={{ fontFamily: 'Noto Naskh Arabic' }}>
+                            <div dir="rtl" className="quran-text text-justify text-white">
                                 {pageAyahs.map((ayah) => {
                                     const isCurrent = ayah.numberInSurah === user.progressAyah && ayah.surah.number === user.progressSurah
+                                    const BISMILLAH = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
+                                    const startsWithBismillah = ayah.text.startsWith('بِسْمِ اللَّهِ')
+                                    const remainingText = startsWithBismillah
+                                        ? ayah.text.slice(ayah.text.indexOf(BISMILLAH) + BISMILLAH.length).trim()
+                                        : ayah.text
                                     return (
-                                        <span key={ayah.number} className={isCurrent ? "bg-[rgba(201,162,39,0.2)] rounded px-1 transition-colors duration-500" : ""}>
-                                            {ayah.text}
-                                            <span className="inline-flex items-center justify-center w-8 h-8 mx-1 text-xs border rounded-full align-middle relative top-1"
-                                                style={{ borderColor: 'var(--color-gold)', color: 'var(--color-gold)', background: 'rgba(201,162,39,0.05)' }}>
-                                                {ayah.numberInSurah}
-                                            </span>
-                                            {' '}
+                                        <span key={ayah.number} className={isCurrent ? 'bg-[rgba(201,162,39,0.2)] rounded px-1 transition-colors duration-500' : ''}>
+                                            {startsWithBismillah && (
+                                                <span style={{
+                                                    display: 'block',
+                                                    textAlign: 'center',
+                                                    margin: '1.2rem 0 0.8rem',
+                                                    fontSize: '1.45rem',
+                                                    color: 'var(--color-gold-light)',
+                                                }}>
+                                                    {BISMILLAH}
+                                                </span>
+                                            )}
+                                            {remainingText}
+                                            {remainingText && (
+                                                <span className="ayah-marker">
+                                                    ﴾{String(ayah.numberInSurah).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[+d])}﴿
+                                                </span>
+                                            )}{' '}
                                         </span>
                                     )
                                 })}
